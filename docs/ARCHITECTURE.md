@@ -7,7 +7,7 @@ Browser (page.tsx)                 Next.js server (Vercel function)             
 question ──POST /api/ask──────────▶ validate body
                                    (follow-up? rewrite into a standalone query) ──▶ LLM
                                    searchWeb(query) ─────────────────────────────▶ Tavily
-◀── {"type":"sources"} ───────────  top 6 results → numbered sources
+◀── {"type":"sources"} ───────────  top 5 results → numbered sources
                                    build prompt: system rules + sources + question
                                    streamChat(messages) ─────── stream:true ────▶ LLM (Groq/Gemini)
 ◀── {"type":"token"} × N ─────────  forward each text delta as it arrives
@@ -32,6 +32,7 @@ question ──POST /api/ask──────────▶ validate body
 | `src/lib/search.ts` | Call Tavily, map results → `Source[]` |
 | `src/lib/llm.ts` | `streamChat()` and `completeChat()` over `/chat/completions`, SSE parsing |
 | `src/lib/prompts.ts` | System prompt with numbered sources, related-questions prompt, query rewrite prompt |
+| `src/lib/followups.ts` | Related questions, and rewriting follow-ups into standalone search queries |
 | `src/lib/demo.ts` | Canned sources and answer when keys are missing (offline safety net) |
 | `src/app/api/search/route.ts` | GET debug endpoint: search only |
 | `src/app/api/ask/route.ts` | POST: orchestrates search → LLM stream → related questions |
@@ -44,5 +45,7 @@ question ──POST /api/ask──────────▶ validate body
 | --- | --- | --- |
 | `LLM_BASE_URL` | server | `https://api.groq.com/openai/v1` |
 | `LLM_API_KEY` | server (secret) | `gsk_…` |
-| `LLM_MODEL` | server | `llama-3.3-70b-versatile` |
+| `LLM_MODEL` | server | `openai/gpt-oss-120b` |
+| `LLM_FAST_MODEL` | server (optional) | `openai/gpt-oss-20b` |
+| `LLM_REASONING_EFFORT` | server (optional) | `low` |
 | `TAVILY_API_KEY` | server (secret) | `tvly-…` |
